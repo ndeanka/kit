@@ -12,7 +12,7 @@ import type {
   RunCompletePayload,
   Provisioner,
 } from '@openfn/lexicon/lightning';
-
+import Project from '@openfn/project';
 import { ServerState } from './server';
 import { RUN_COMPLETE } from './events';
 import type { DevServer, LightningEvents } from './types';
@@ -111,7 +111,13 @@ const setupDevAPI = (
 
   app.getState = () => state;
 
-  app.addProject = (project: Provisioner.Project_v1) => {
+  app.addProject = async (project: Provisioner.Project_v1 | string) => {
+    if (typeof project === 'string') {
+      const proj = await Project.from('project', project);
+      project = proj.serialize('state', {
+        format: 'json',
+      }) as Provisioner.Project_v1;
+    }
     state.projects[project.id] = project;
   };
 
